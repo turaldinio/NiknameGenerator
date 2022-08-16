@@ -1,10 +1,10 @@
-import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 public class Main {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -13,32 +13,13 @@ public class Main {
         for (int i = 0; i < texts.length; i++) {
             texts[i] = generateText("abc", 3 + random.nextInt(3));
         }
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        executorService.submit(() -> {
-            int integer = isPalindrome(texts);
-            System.out.println("Красивых слов с длиной 3: " + integer + " шт");
-            return integer;
-        });
+        new Thread(() -> System.out.println("Красивых слов с длиной 3: " + isPalindrome(texts) + " шт")).start();
 
-        Future<Integer> future1 = executorService.submit(() -> {
-            int integer = isIdenticalLetters(texts);
-            System.out.println("Красивых слов с длиной 4: " + integer + " шт");
-            return integer;
-        });
+        new Thread(() -> System.out.println("Красивых слов с длиной 4: " + isIdenticalLetters(texts) + " шт")).start();
 
-        executorService.submit(() -> {
-            int integer = isAscending(texts);
-            System.out.println("Красивых слов с длиной 5: " + integer + future1.get() + " шт");
-            return integer;
-        });
+        new Thread(() -> System.out.println("Красивых слов с длиной 5: " + isAscending(texts) + " шт")).start();
 
-        executorService.shutdown();
-
-
-        //   Thread beautifulWord3 = new Thread(() -> System.out.println("Красивых слов с длиной 3: " + isPalindrome(texts) + " шт"));
-        //  Thread beautifulWord4 = new Thread(() -> System.out.println("Красивых слов с длиной 4: " + isIdenticalLetters(texts) + " шт"));
-        // Thread beautifulWord5 = new Thread(() -> System.out.println("Красивых слов с длиной 5: " + isAscending(texts) + " шт"));
 
     }
 
@@ -54,16 +35,13 @@ public class Main {
     public static int isPalindrome(String[] array) {
         AtomicInteger integer = new AtomicInteger();
         for (int a = 0; a < array.length; a++) {
-            if (array[a].length() == 3 && array[a].equals(
-                    new StringBuilder().
-                            append(array[a])
-                            .reverse()
-                            .toString())) {
+            if (array[a].length() == 3 &&
+                    array[a].charAt(0) == array[a].charAt(2)) {
                 integer.addAndGet(1);
 
             }
-
         }
+
         return integer.get();
 
     }
@@ -100,9 +78,8 @@ public class Main {
     }
 
     public static boolean ascendingHashCode(String line) {
-        AtomicInteger integer = new AtomicInteger(line.charAt(0));
         for (int a = 1; a < line.length(); a++) {
-            if (line.charAt(a) <= integer.get()) {
+            if (line.charAt(a) < line.charAt(a - 1)) {
                 return false;
             }
         }
